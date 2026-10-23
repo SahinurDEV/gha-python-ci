@@ -16,23 +16,8 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Run the tests with coverage
-        run: pytest -v --cov=textstats --cov-report=html
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-report
-          path: htmlcov/
-          retention-days: 7
-
-  report:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download coverage report
-        uses: actions/download-artifact@v8
-        with:
-          name: coverage-report
-          path: coverage
-      - name: List the files
-        run: ls -R coverage | head -20
+      - name: Run the tests
+        run: pytest -v --junitxml=report.xml
+      - name: Write the job summary
+        if: always()
+        run: python scripts/summary.py report.xml
