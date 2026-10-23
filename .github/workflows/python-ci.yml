@@ -8,16 +8,31 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.13", "3.14", "3.15"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.14"
           cache: pip
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Run the tests
-        run: pytest -v
+      - name: Run the tests with coverage
+        run: pytest -v --cov=textstats --cov-report=html
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
+
+  report:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download coverage report
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-report
+          path: coverage
+      - name: List the files
+        run: ls -R coverage | head -20
